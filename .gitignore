@@ -1,0 +1,17 @@
+# Dados e arquivos grandes (evita erro de limite no GitHub)
+DADOS/
+INPUTS/
+*.csv
+*.zip
+
+# Ambientes virtuais do Python
+venv/
+env/
+.venv/
+
+# Cache do Python e arquivos temporários
+__pycache__/
+*.pyc
+.pytest_cache/
+.vscode/
+.idea/
