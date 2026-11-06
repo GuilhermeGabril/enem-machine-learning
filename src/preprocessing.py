@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OrdinalEncoder
 
+
 def carregar_dados_completos(caminho_relativo="DADOS/MICRODADOS_ENEM_2020.csv"):
     
     # Função 1: Carrega o arquivo CSV completo do ENEM e remove colunas desnecessárias.
@@ -117,7 +118,7 @@ def aplicar_label_encoder(df):
             
     return df
 
-from sklearn.preprocessing import OrdinalEncoder
+
 
 def aplicar_ordinal_encoder(df):
     
@@ -149,3 +150,78 @@ def aplicar_ordinal_encoder(df):
         print("Aviso: Nenhuma das colunas ordinais especificada foi encontrada no DataFrame.")
         
     return df
+
+
+def processar_media_e_remover_notas(df):
+    
+    #Função 6: Cria a coluna 'Nota' com a média das provas oficiais do ENEM e remove as colunas de notas individuais originais.
+    
+    colunas_notas = [
+        'NU_NOTA_CN', 
+        'NU_NOTA_CH', 
+        'NU_NOTA_LC', 
+        'NU_NOTA_MT'
+    ]
+    
+    # Filtra apenas as colunas que realmente existem no DataFrame
+    colunas_presentes = [col for col in colunas_notas if col in df.columns]
+    
+    if colunas_presentes:
+        # 1. Cria a nova coluna 'Nota' com a média linha a linha
+        df['Nota'] = df[colunas_presentes].mean(axis=1)
+        print("Coluna 'Nota' criada com sucesso!")
+        
+        # 2. Exclui as colunas de notas individuais que foram usadas na média
+        df = df.drop(columns=colunas_presentes, errors='ignore')
+        print("Colunas de notas individuais removidas com sucesso!")
+    else:
+        print("Aviso: Nenhuma coluna de nota foi encontrada para o cálculo.")
+    
+    return df
+
+
+def criar_coluna_classe(df):
+    
+    # Função 7:Calcula o quartil superior (75%) da coluna 'Nota' e cria a coluna 'Classe':  1 para desempenho bom (Nota > qs) e 0 para desempenho ruim (Nota <= qs)
+
+
+    
+    if 'Nota' in df.columns:
+        # 1. Calcula o quartil superior (75%) da coluna Nota
+        qs = df['Nota'].quantile(0.75)
+        print(f"Quartil superior (75%) calculado para a coluna Nota: {qs:.2f}")
+        
+        # 2. Cria a coluna 'Classe' usando np.where
+        # Se a nota for maior que o quartil, recebe 1; caso contrário, 0.
+        df['Classe'] = np.where(df['Nota'] > qs, 1, 0)
+        
+        print("Coluna 'Classe' criada com sucesso!")
+        
+    else:
+        print("Aviso: A coluna 'Nota' não foi encontrada para calcular o quartil.")
+        
+    return df
+
+
+def separar_features_e_target(df):
+    # Função 8: Separa o DataFrame em X (features) e y (target).
+
+    # 1. Excluir a coluna Nota
+    if 'Nota' in df.columns:
+        df = df.drop(columns=['Nota'])
+        print("Coluna 'Nota' excluída com sucesso!")
+    
+    # 2. Criar a variável y com a coluna Classe
+    if 'Classe' in df.columns:
+        y = df['Classe'].copy()
+        print("Variável 'y' (target) criada com sucesso!")
+        
+        # 3. Excluir a coluna classe do dataframe principal (X)
+        df = df.drop(columns=['Classe'])
+        print("Coluna 'Classe' excluída do DataFrame de características (X).")
+    else:
+        y = None
+        print("Aviso: Coluna 'Classe' não foi encontrada.")
+        
+    # Retorna o DataFrame limpo (agora chamado de X) e a série y
+    return df, y
